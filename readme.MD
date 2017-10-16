@@ -33,7 +33,11 @@ Based on the sensors:
 ## Phase 1: Data Gathering
 In the first phase I want to setup a script to continuously log the state of my devices and save them into a database. This will allow me to later use this information to train a machine learning algorithm to learn my habits.
 
-To get started I installed the Raspberry Pi image as detailed here: http://zwavepublic.com/developer. Next I started building the data gathering script.
+To get started I installed the Raspberry Pi image as detailed here: http://zwavepublic.com/developer, plugged in the Z-Wave bridge adapter and booted the Raspberry Pi.
+
+Next I accessed the Z-Ware sample gateway software using https://raspberrypi.local/ui/pc/index.html and setup my network by installing all my devices.
+
+Next I started building the data gathering script. 
 
 ### Data Gathering Script
 To start gathering data I must first decide on a data store and a data structure.
