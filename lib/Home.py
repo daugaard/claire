@@ -10,6 +10,15 @@ class Home:
         self.name = name
         self.devices = self.network_service.initialize_devices()
 
+    # Updates the state of each
+    def update_devices(self):
+        anything_changed = False
+        # Poll all devices
+        for device in self.devices:
+            anything_changed = anything_changed | self.network_service.update_device_state(device)
+
+        return anything_changed
+
     def to_dict(self):
         h = {'home_id': self.home_id, 'name': self.name, 'devices': []}
         for d in self.devices:

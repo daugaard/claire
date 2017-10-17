@@ -129,3 +129,8 @@ def zwif_av_api(ifd, cmd=1, arg=''):
 	if cmd == 2 or cmd == 3:
 		return r.find('./zwif/av_caps')
 	return r
+
+# Extensions needed for CLAIRE
+
+def zwif_multilevel_status(ifd):
+    return zwif_api('level', ifd, 3)

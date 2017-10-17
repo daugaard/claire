@@ -24,20 +24,14 @@ while True:
     print("Polling all devices")
     anything_changed = False
 
-    # Poll all devices
-    #for device in home.devices:
-    #    device_status = zware.zw_api("zwep_get_if_list", "epd=" + device.device_id)
-    #    print(tostring(device_status))
-    #    device_basic_command_class_status = device_status.findall(".//zwif[@name='COMMAND_CLASS_BASIC']")
-    #    if len(device_basic_command_class_status) == 1:
-    #        print(device_basic_command_class_status)
-
     # Has anything changed?
-
+    anything_changed = home.update_devices()
 
     if anything_changed == True:
         # Store in CouchDB
         print("Something changed - store in CouchDB")
+        print(home.to_dict())
+
     else:
         # If more than
         delta = datetime.datetime.now() - last_save
@@ -45,6 +39,7 @@ while True:
         if (delta.seconds  / 60) >= minutes_between_log:
             # Store in CouchDB
             print("Peridic store in CouchDB")
+            print(home.to_dict())
 
             last_save = datetime.datetime.now()
 
