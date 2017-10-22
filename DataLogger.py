@@ -35,7 +35,7 @@ ouput_log_to_console = config.getboolean("Log","ouput_log_to_console")
 # set up logging to file - see previous section for more details
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                    datefmt='%m-%d %H:%M',
+                    datefmt='%m-%d-%y %H:%M:%S',
                     filename=logfile,
                     filemode='a')
 
