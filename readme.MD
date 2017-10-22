@@ -37,22 +37,23 @@ To get started I installed the Raspberry Pi image as detailed here: http://zwave
 
 Next I accessed the Z-Ware sample gateway software using https://raspberrypi.local/ui/pc/index.html and setup my network by installing all my devices.
 
-Next I started building the data gathering script. 
+Next I started building the data gathering script.
 
 ### Data Gathering Script
 To start gathering data I must first decide on a data store and a data structure.
 
 To enable me to have maximum flexibilty in data structure and data mobility and distribution I have selected to store my data in [CouchDB](http://couchdb.apache.org/). CouchDB is a highly scalable no-SQL database. I works well as both a simple single instance database on an embedded device, and in a cluster mode for large installation. Additionally CouchDB also implements a data replication protocol that could enable me to later easily replicate data from my gateway device into the cloud for advanced machine learning processing without having to change the initial data gathering script.
 
-In terms of data structure CouchDB allows us to store JSON documents directy into the database. So I will be setting up my home state as a expandable dictionary object in Python and store this directly into the database.
+In terms of data structure CouchDB allows us to store JSON documents directy into the database. I build a simple python object model for my home and a few simple home automation device types, each model has a to_dict method allowing me to easily dump the entire state of my home into a dictionary that can be stored directly in CouchDB.
 
 To get the actual status of my devices I create a python script based on the very simple [PyZWare](https://github.com/Z-WavePublic/PyZWare) API. The script will continuously read the status of my Z-Wave devices and log the status to the database on the following conditions:
-- Every 5 minutes
+- Every 1 minute
 - Whenever a state has changed on any device
 
 
 
-In this phase I plan to use the Z/IP gateway to setup a data logging device that will log the status of my home automation devices every few minutes and whenever a sensor state changes.
+
+
 
 ## Phase 2: Learning
 In phase 2 I plan to use the data gathered to build a neural network that takes my current house state (sensor states, devices states, times etc.) as inputs and predicts my next house state as an output.

@@ -5,8 +5,8 @@ class BasicDevice:
         self.device_id = device_id
         self.name = name
         self.state = state
-
+        self.type = "BasicDevice"
 
     def to_dict(self):
-        d = {'device_id': self.device_id, 'name': self.name, 'state': self.state}
+        d = {'device_id': self.device_id, 'name': self.name, 'state': self.state, 'type': self.type}
         return d

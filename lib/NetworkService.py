@@ -6,16 +6,18 @@ from .BinaryPowerSwitchDevice import BinaryPowerSwitchDevice
 
 from xml.etree.ElementTree import tostring
 
-zware_address = "https://raspberrypi.local/"
-zware_user = "sigma"
-zware_password = "sigmadesigns"
-
 class NetworkService():
-    def __init__(self):
+    def __init__(self, zware_address, zware_user, zware_password):
         # Connect to Z-Wave
         r = zware.zw_init(zware_address,zware_user,zware_password)
         v = r.findall("./version")[0]
         print("Connected to zware version: " + v.get('app_major') + '.' + v.get('app_minor'))
+
+    def get_home_id(self):
+        rn = zware.zw_api("zw_info")
+        zw_info = rn.find("./zw_info")
+
+        return zw_info.get('home_id')
 
     def initialize_devices(self):
         devices = []
@@ -25,6 +27,7 @@ class NetworkService():
 
         # Get all nodes
         rn = zware.zw_api("zwnet_get_node_list")
+
         nodes = rn.findall("./zwnet/zwnode")
         for node in nodes:
             # print("Getting node " + node.get("desc"))
@@ -33,7 +36,7 @@ class NetworkService():
             # Most devices will only have one endpoint, but lets iterate through just in case
             endpoints = endpoints_request.findall("./zwnode/zwep")
             for endpoint in endpoints:
-                print(tostring(endpoint))
+                #print(tostring(endpoint))
                 print("Found endpoint device with id: " + endpoint.get('desc') + " called " + endpoint.get('name') + " in " + endpoint.get("loc"))
                 # Create device
                 device = None
@@ -78,6 +81,16 @@ class NetworkService():
                 if state != device.state:
                     anything_changed = True
                     device.state = state
+
+            interface = device_status.find(".//zwif[@name='COMMAND_CLASS_METER']")
+            if interface != None:
+                # Get instantanous power consumption (unit=2)
+                r = zware.zwif_meter_api(interface.get('desc'), 3, "&unit=2")
+                power_state = float(r.get('value'))
+                if power_state != device.power_state:
+                    anything_changed = True
+                    device.power_state = power_state
+
         #elif isinstance(device, BasicDevice):
             # Dont do anything the basic command class implementation does not seem to work
             #interface = device_status.find(".//zwif[@name='COMMAND_CLASS_BASIC']")

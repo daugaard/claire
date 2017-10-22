@@ -1,12 +1,11 @@
 import datetime
-
-from .NetworkService import NetworkService
+from .HomeState import HomeState
 
 # Home object holds home name and id as well as all the devices in the home.
 class Home:
-    def __init__(self, name, home_id=""):
-        self.network_service = NetworkService()
-        self.home_id = home_id
+    def __init__(self, name, network_service, home_id=""):
+        self.network_service = network_service
+        self.home_id = network_service.get_home_id()
         self.name = name
         self.devices = self.network_service.initialize_devices()
 
@@ -19,11 +18,9 @@ class Home:
 
         return anything_changed
 
-    def to_dict(self):
-        h = {'home_id': self.home_id, 'name': self.name, 'devices': []}
+    def get_home_state(self):
+        h = HomeState(home_id=self.home_id, name=self.name, time=datetime.datetime.now())
         for d in self.devices:
-            h['devices'].append( d.to_dict() )
-
-        h['time'] = datetime.datetime.now()
+            h.devices.append( d.to_dict() )
 
         return h
