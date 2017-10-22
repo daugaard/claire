@@ -1,6 +1,7 @@
 import datetime
 import time
 import configparser
+import logging
 import couchdb
 from uuid import uuid4
 
@@ -27,6 +28,31 @@ zware_password = config.get("ZWare", "zware_password")
 couchdb_server = config.get("CouchDB", "url")
 couchdb_name = config.get("CouchDB", "db")
 
+logfile = config.get("Log","logfile")
+ouput_log_to_console = config.getboolean("Log","ouput_log_to_console")
+
+# Initialize Python logger
+# set up logging to file - see previous section for more details
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                    datefmt='%m-%d %H:%M',
+                    filename=logfile,
+                    filemode='a')
+
+logger = logging.getLogger('CLAIRE.DataLogger')
+
+if ouput_log_to_console:
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+    # set a format which is simpler for console use
+    formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+    # tell the handler to use this format
+    console.setFormatter(formatter)
+    # add the handler to the root logger
+    logging.getLogger('').addHandler(console)
+
+logger.info("Initializing CLAIRE DataLogger Module")
+
 # Initialize network layer
 network_service = NetworkService(zware_address, zware_user, zware_password)
 
@@ -46,7 +72,7 @@ except couchdb.http.ResourceNotFound:
 last_save = datetime.datetime(1999,1,1)
 
 while True:
-    print("Polling all devices")
+    logger.info("Polling all devices")
     anything_changed = False
 
     # Has anything changed?
@@ -54,8 +80,9 @@ while True:
 
     if anything_changed == True:
         # Store in CouchDB
-        print("Something changed - store in CouchDB")
+        logger.info("Something changed - store in CouchDB")
         home_state = home.get_home_state()
+        home_state.periodic_update = False
         home_state.store(couchdb)
 
     else:
@@ -64,8 +91,9 @@ while True:
 
         if (delta.seconds  / 60) >= minutes_between_log:
             # Store in CouchDB
-            print("Peridic store in CouchDB")
+            logger.info("Peridic store in CouchDB")
             home_state = home.get_home_state()
+            home_state.periodic_update = True
             home_state.store(couchdb)
 
             last_save = datetime.datetime.now()

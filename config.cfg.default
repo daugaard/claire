@@ -13,3 +13,7 @@ seconds_between_poll: 0.5
 [CouchDB]
 url: http://localhost:5984/
 db: claire_db
+
+[Log]
+logfile: ./log/claire_datalogger.log
+ouput_log_to_console: False
