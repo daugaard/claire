@@ -72,7 +72,7 @@ except couchdb.http.ResourceNotFound:
 last_save = datetime.datetime(1999,1,1)
 
 while True:
-    logger.info("Polling all devices")
+    logger.debug("Polling all devices")
     anything_changed = False
 
     # Has anything changed?

@@ -5,7 +5,13 @@ Download and install Raspberry Pi image as detailed here: http://zwavepublic.com
 Next access the Z-Ware sample gateway software using https://raspberrypi.local/ui/pc/index.html and setup your network by installing your devices.
 
 ## Installing prerequisites
-SSH to your Raspberry Pi and install Python3, pip3, couchdb, screen and git.
+SSH to your Raspberry Pi and expand the root partition and reboot:
+```
+sudo raspi-config --expand-rootfs
+sudo shutdown -r now
+```
+
+SSH back to the Raspberry Pi and install Python3, pip3, couchdb, screen and git.
 ```
 sudo apt-get install python3
 sudo apt-get install python3-pip
