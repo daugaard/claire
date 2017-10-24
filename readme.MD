@@ -30,6 +30,19 @@ Based on the sensors:
 - Motion 2
 - Switch 1 power monitor
 
+## Solution design
+The main design goal for my project is to create a simple, flexible and scalable solution. I want to make sure I split the solution into key parts that can run separately to enable me to have maximum flexibility during development and when running the project.
+
+To accommodate this structure I have split the solution into 4 parts:
+- Data Gathering
+-- This part will monitor the Z-Wave network and store information about my devices and network into a database.
+- Learning
+-- This part will use the stored data to predict the rules and habits of my home using a machine learning algorithm.
+- Automation
+-- This part will use the current state of my Z-Wave sensors and the trained machine learning algorithm to predict the wanted state of my actuator devices and execute the state if its different from the current state.   
+- Online learning  
+-- This part will enable the systemt to learn new habits by continuously training the machine learning algorithm with the latest data from my devices.
+
 ## Phase 1: Data Gathering
 In the first phase I want to setup a script to continuously log the state of my devices and save them into a database. This will allow me to later use this information to train a machine learning algorithm to learn my habits.
 
@@ -42,21 +55,40 @@ Next I started building the data gathering script.
 ### Data Gathering Script
 To start gathering data I must first decide on a data store and a data structure.
 
-To enable me to have maximum flexibilty in data structure and data mobility and distribution I have selected to store my data in [CouchDB](http://couchdb.apache.org/). CouchDB is a highly scalable no-SQL database. I works well as both a simple single instance database on an embedded device, and in a cluster mode for large installation. Additionally CouchDB also implements a data replication protocol that could enable me to later easily replicate data from my gateway device into the cloud for advanced machine learning processing without having to change the initial data gathering script.
+To enable me to have maximum flexibility in data structure and data mobility and distribution I have selected to store my data in [CouchDB](http://couchdb.apache.org/). CouchDB is a highly scalable no-SQL database. I works well as both a simple single instance database on an embedded device, and in a cluster mode for large installation. Additionally CouchDB also implements a data replication protocol that could enable me to later easily replicate data from my gateway device into the cloud for advanced machine learning processing without having to change the initial data gathering script.
 
-In terms of data structure CouchDB allows us to store JSON documents directy into the database. I build a simple python object model for my home and a few simple home automation device types, each model has a to_dict method allowing me to easily dump the entire state of my home into a dictionary that can be stored directly in CouchDB.
+In terms of data structure CouchDB allows us to store JSON documents directly into the database. I build a simple python object model for my home and a few simple home automation device types, each model has a to_dict method allowing me to easily dump the entire state of my home into a dictionary that can be stored directly in CouchDB.
 
-To get the actual status of my devices I create a python script based on the very simple [PyZWare](https://github.com/Z-WavePublic/PyZWare) API. The script will continuously read the status of my Z-Wave devices and log the status to the database on the following conditions:
+To get the actual status of my devices I create a python script based on the very simple [PyZWare](https://github.com/Z-WavePublic/PyZWare) API.
+
+The script will continuously read the status of my Z-Wave devices and save the status of my home to the database on the following conditions:
 - Every 1 minute
 - Whenever a state has changed on any device
-
-
-
-
-
+The state will be saved in a home state document in the database. The home state document will contain a timestamp and the state of the devices.
 
 ## Phase 2: Learning
-In phase 2 I plan to use the data gathered to build a neural network that takes my current house state (sensor states, devices states, times etc.) as inputs and predicts my next house state as an output.
+In phase 2 we now need to build a machine learning model that can learn the "rules" of my home and predict the wanted state of my Z-Wave devices based on the sensors in my house.
+
+### Move data from the Raspberry Pi to my laptop
+Building and training a Neural Network can be very resource intensive so we do not necessarily wish to do this on the Raspberry Pi. Instead I move the data of the Raspberry Pi to my laptop (this could as well be into a cloud service but for my home my laptop will do). Luckily I choose to build the application using CouchDB which implements a replication protocol allow data to be easily moved from the device and onto my laptop (or into the cloud).
+
+### Defining the machine learning problem
+I see the machine learning problems as a classic classification problem where we want to predict the state of my actuator devices based on the state of my sensor devices in my home.
+
+As inputs to my machine learning problem I will use all the sensor data from my home as well as the time stamp. This will allow my model to react to not only sensor data, but also take the time and day into account. _For example: tripping the movement sensor in the living in the morning may need to execute a different automation than tripping it in the evening._
+
+#### Picking a machine learning model
+Since we are dealing with a classification problem we have a number of models available to us.
+
+For this project I will test the following:
+- SVM with different kernels (Gaussian, Linear)
+- Logistic Regression
+- Neural Network (a couple of different architectures)
+
+To pick the best model I run a 5 fold cross validation and pick the algorithm with the lowest classification error.
+
+
+
 
 ## Phase 3: Automation
 In phase 3 I plan to put the network to work. I will integrate the neural network with the Z/IP gateway so I can continously read the current state of my home and use that to predict any changes to the state based on sensor data.
