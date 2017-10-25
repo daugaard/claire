@@ -29,9 +29,18 @@ try:
 except couchdb.http.ResourceNotFound:
     print("Error database $(couchdb_name)s does not exist")
 
+# Load all home states in the database
 home_states = HomeState.view(couchdb, "_design/home_state/_view/by_time")
 
+# Generate dataset from home states
+X = []
+y = []
 for home in home_states:
     print(home.time)
-    print(home.feature_vector())
-    print(home.output_vector())
+    X.append(home.feature_vector())
+    y.append(home.output_vector())
+
+# Fit to model
+print(X,y)
+
+# Store the model

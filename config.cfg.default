@@ -10,6 +10,9 @@ zware_password: sigmadesigns
 minutes_between_log: 5
 seconds_between_poll: 0.5
 
+[Automation]
+seconds_between_poll: 0.5
+
 [CouchDB]
 url: http://localhost:5984/
 db: claire_db
