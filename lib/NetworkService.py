@@ -1,9 +1,9 @@
 import logging
-from . import zware
-from .BasicDevice import BasicDevice
-from .DimmerDevice import DimmerDevice
-from .BinarySensorDevice import BinarySensorDevice
-from .BinaryPowerSwitchDevice import BinaryPowerSwitchDevice
+from .zware import zware
+from .devices.BasicDevice import BasicDevice
+from .devices.DimmerDevice import DimmerDevice
+from .devices.BinarySensorDevice import BinarySensorDevice
+from .devices.BinaryPowerSwitchDevice import BinaryPowerSwitchDevice
 
 from xml.etree.ElementTree import tostring
 

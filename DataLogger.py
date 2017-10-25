@@ -3,7 +3,6 @@ import time
 import configparser
 import logging
 import couchdb
-from uuid import uuid4
 
 from lib.Home import Home
 from lib.NetworkService import NetworkService
