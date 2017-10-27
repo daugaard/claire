@@ -2,8 +2,9 @@ import configparser
 import logging
 import couchdb
 
-from lib.HomeState import HomeState
-from lib.NetworkService import NetworkService
+from clairelib.HomeState import HomeState
+from clairelib.NetworkService import NetworkService
+import clairelib.couch.ViewDefinitions as ViewDefinitions
 
 config = configparser.ConfigParser()
 config.read('config.cfg')
@@ -28,6 +29,9 @@ try:
     couchdb = couch[couchdb_name]
 except couchdb.http.ResourceNotFound:
     print("Error database $(couchdb_name)s does not exist")
+
+# Sync all views
+ViewDefinitions.sync(couchdb)
 
 # Load all home states in the database
 home_states = HomeState.view(couchdb, "_design/home_state/_view/by_time")

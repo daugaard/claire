@@ -4,8 +4,8 @@ import configparser
 import logging
 import couchdb
 
-from lib.Home import Home
-from lib.NetworkService import NetworkService
+from clairelib.Home import Home
+from clairelib.NetworkService import NetworkService
 
 config = configparser.ConfigParser()
 config.read('config.cfg')
