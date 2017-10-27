@@ -4,6 +4,7 @@ from .devices.BasicDevice import BasicDevice
 from .devices.DimmerDevice import DimmerDevice
 from .devices.BinarySensorDevice import BinarySensorDevice
 from .devices.BinaryPowerSwitchDevice import BinaryPowerSwitchDevice
+from .devices.MultiSensorDevice import MultiSensorDevice
 
 from xml.etree.ElementTree import tostring
 
@@ -39,7 +40,7 @@ class NetworkService():
             # Most devices will only have one endpoint, but lets iterate through just in case
             endpoints = endpoints_request.findall("./zwnode/zwep")
             for endpoint in endpoints:
-                #print(tostring(endpoint))
+                print(tostring(endpoint))
                 logger.info("Found endpoint device with id: " + endpoint.get('desc') + " called " + endpoint.get('name') + " in " + endpoint.get("loc"))
                 # Create device
                 device = None
@@ -49,6 +50,8 @@ class NetworkService():
                     device = BinaryPowerSwitchDevice(endpoint.get('desc'), endpoint.get('name'), 0)
                 elif int(endpoint.get('generic')) == 32: # Binary Sensor
                     device = BinarySensorDevice(endpoint.get('desc'), endpoint.get('name'), 0)
+                elif int(endpoint.get('generic')) == 33: # Multi Sensor
+                    device = MultiSensorDevice(endpoint.get('desc'), endpoint.get('name'), 0)
                 else:
                     device = BasicDevice( endpoint.get('desc'), endpoint.get('name'), 0 )
                 devices.append(device)
@@ -93,6 +96,25 @@ class NetworkService():
                 if power_state != device.power_state:
                     anything_changed = True
                     device.power_state = power_state
+        elif isinstance(device, MultiSensorDevice):
+            interface = device_status.find(".//zwif[@name='COMMAND_CLASS_BASIC']")
+            if interface != None:
+                r = zware.zwif_basic_api(interface.get('desc'), 2)
+                r = zware.zwif_basic_api(interface.get('desc'), 3)
+                state = int(r.get('state'))
+                if state != device.state:
+                    anything_changed = True
+                    device.state = state
+
+            interface = device_status.find(".//zwif[@name='COMMAND_CLASS_SENSOR_MULTILEVEL']")
+            if interface != None:
+                r = zware.zwif_api('sensor', interface.get('desc'), 2, "&type=1&unit=0")
+                sensor = r.find('.//sensor')
+                temperature = float(sensor.get('value'))
+                if temperature != device.temperature:
+                    anything_changed = True
+                    device.temperature = temperature
+
 
         #elif isinstance(device, BasicDevice):
             # Dont do anything the basic command class implementation does not seem to work
