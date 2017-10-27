@@ -38,8 +38,10 @@ class HomeState(Document):
             return None
 
     def feature_vector_device(self, device):
-        if device['type'] == 'BinarySensorDevice' or device['type'] == 'MultiSensorDevice':
+        if device['type'] == 'BinarySensorDevice':
             return [1 if device['state'] > 1 else 0]
+        elif device['type'] == 'MultiSensorDevice':
+            return [1 if device['state'] > 1 else 0, device['lux']]
         elif device['type'] == 'BinaryPowerSwitchDevice':
             return [device['power_state']]
         else: # Other devices does not generate a feature vector
