@@ -5,6 +5,7 @@ from couchdb.mapping import Document, TextField, IntegerField, BooleanField, Dat
 
 class HomeState(Document):
     home_id = TextField()
+    type = TextField(default="home_state")
     name = TextField()
     time = DateTimeField()
     periodic_update = BooleanField()

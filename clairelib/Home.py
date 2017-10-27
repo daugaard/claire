@@ -22,5 +22,4 @@ class Home:
         h = HomeState(home_id=self.home_id, name=self.name, time=datetime.datetime.now())
         for d in self.devices:
             h.devices.append( d.to_dict() )
-
         return h

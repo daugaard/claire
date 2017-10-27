@@ -115,11 +115,22 @@ class NetworkService():
                     r = zware.zwif_api('sensor', interface.get('desc'), 2, "&type=1&unit=0")
                     sensor = r.find('.//sensor')
                     temperature = float(sensor.get('value'))
+
+                    r = zware.zwif_api('sensor', interface.get('desc'), 2, "&type=3&unit=1")
+                    sensor = r.find('.//sensor')
+                    lux = float(sensor.get('value'))
+
                 except:
                     temperature = device.temperature
+                    lux = device.lux
+
                 if temperature != device.temperature:
                     anything_changed = True
                     device.temperature = temperature
+
+                if lux != device.lux:
+                    anything_changed = True
+                    device.lux = lux
 
 
         #elif isinstance(device, BasicDevice):
@@ -134,3 +145,19 @@ class NetworkService():
             #        device.state = state
 
         return anything_changed
+
+    def get_command_classes(self, device_id):
+        device_status = zware.zw_api("zwep_get_if_list", "epd=" + device_id)
+
+        return list(map(lambda i: i.get('name'), device_status.findall(".//zwif")))
+
+
+    def send_command(self, device_id, command_class, command, number, args):
+        device_status = zware.zw_api("zwep_get_if_list", "epd=" + device_id)
+
+        interface = device_status.find(".//zwif[@name='" + command_class + "']")
+        if interface != None:
+            try:
+                return zware.zwif_api(command, interface.get('desc'), number, args)
+            except:
+                print("Error while executing command")
