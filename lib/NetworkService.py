@@ -40,7 +40,7 @@ class NetworkService():
             # Most devices will only have one endpoint, but lets iterate through just in case
             endpoints = endpoints_request.findall("./zwnode/zwep")
             for endpoint in endpoints:
-                print(tostring(endpoint))
+                #print(tostring(endpoint))
                 logger.info("Found endpoint device with id: " + endpoint.get('desc') + " called " + endpoint.get('name') + " in " + endpoint.get("loc"))
                 # Create device
                 device = None
@@ -99,18 +99,24 @@ class NetworkService():
         elif isinstance(device, MultiSensorDevice):
             interface = device_status.find(".//zwif[@name='COMMAND_CLASS_BASIC']")
             if interface != None:
-                r = zware.zwif_basic_api(interface.get('desc'), 2)
-                r = zware.zwif_basic_api(interface.get('desc'), 3)
-                state = int(r.get('state'))
+                try:
+                    r = zware.zwif_basic_api(interface.get('desc'), 2)
+                    r = zware.zwif_basic_api(interface.get('desc'), 3)
+                    state = int(r.get('state'))
+                except:
+                    state = device.state
                 if state != device.state:
                     anything_changed = True
                     device.state = state
 
             interface = device_status.find(".//zwif[@name='COMMAND_CLASS_SENSOR_MULTILEVEL']")
             if interface != None:
-                r = zware.zwif_api('sensor', interface.get('desc'), 2, "&type=1&unit=0")
-                sensor = r.find('.//sensor')
-                temperature = float(sensor.get('value'))
+                try:
+                    r = zware.zwif_api('sensor', interface.get('desc'), 2, "&type=1&unit=0")
+                    sensor = r.find('.//sensor')
+                    temperature = float(sensor.get('value'))
+                except:
+                    temperature = device.temperature
                 if temperature != device.temperature:
                     anything_changed = True
                     device.temperature = temperature
