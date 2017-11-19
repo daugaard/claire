@@ -5,3 +5,4 @@ __pycache__/
 tmp/*
 config.cfg
 log/*
+models/*

@@ -77,6 +77,8 @@ I see the machine learning problems as a classic classification problem where we
 
 As inputs to my machine learning problem I will use all the sensor data from my home as well as the time stamp. This will allow my model to react to not only sensor data, but also take the time and day into account. _For example: tripping the movement sensor in the living in the morning may need to execute a different automation than tripping it in the evening._
 
+I use a one-hot encoder to encode the timestamp as a 3 categorial values: weekday, hour and minute in 10-minute intervals.  
+
 #### Picking a machine learning model
 Since we are dealing with a classification problem we have a number of models available to us.
 
@@ -84,8 +86,11 @@ For this project I will test the following:
 - SVM with different kernels (Gaussian, Linear)
 - Logistic Regression
 - Neural Network (a couple of different architectures)
+- Random Forest
 
-To pick the best model I run a 5 fold cross validation and pick the algorithm with the lowest classification error.
+To pick the best model I run a 5 fold cross validation and pick the algorithm with the lowest classification error. To train the models and perform cross validation I use the scikit learn library from python. To install the scikit learn library run: pip3 install scipy sklearn numpy.
+
+
 
 
 

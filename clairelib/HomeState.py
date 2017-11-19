@@ -13,11 +13,19 @@ class HomeState(Document):
 
     def feature_vector(self):
         feature_vector = []
+        # Append with day of week
+        feature_vector.append( self.time.weekday() )
+
+        # Append with hour and minute number in 10 minutes interval
+        feature_vector.append( self.time.hour )
+        feature_vector.append( int(self.time.minute/10) )
+
         # Loop over all devices sorted by ID - this will ensure the same order of features for every feature vector
         for device in sorted(self.devices, key=lambda d: d['device_id']):
             device_feature_vector = self.feature_vector_device(device)
             if device_feature_vector != None:
                 feature_vector.extend(device_feature_vector)
+
         return feature_vector
 
     def output_vector(self):
