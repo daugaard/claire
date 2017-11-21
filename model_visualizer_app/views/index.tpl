@@ -54,7 +54,7 @@
                 <div class="col-md-4">
                   <div class="form-group">
                     <label for="time">Time:</label>
-                    <input name="time" type="datetime-local" value="2017-11-19T15:30" class="form-control">
+                    <input name="time" type="datetime-local" value="{{time.strftime("%Y-%m-%dT%H:%M")}}" class="form-control">
                   </div>
                 </div>
               </div>

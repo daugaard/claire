@@ -23,7 +23,7 @@ I have the following devices:
 I hope to be able to automate the following actuators:
 - Light 1
 - Light 2
-- Swith 1
+- Switch 1
 
 Based on the sensors:
 - Motion 1
@@ -69,7 +69,7 @@ The state will be saved in a home state document in the database. The home state
 ## Phase 2: Learning
 In phase 2 we now need to build a machine learning model that can learn the "rules" of my home and predict the wanted state of my Z-Wave devices based on the sensors in my house.
 
-### Move data from the Raspberry Pi to my laptop
+### Moving data from the Raspberry Pi to my laptop
 Building and training a Neural Network can be very resource intensive so we do not necessarily wish to do this on the Raspberry Pi. Instead I move the data of the Raspberry Pi to my laptop (this could as well be into a cloud service but for my home my laptop will do). Luckily I choose to build the application using CouchDB which implements a replication protocol allow data to be easily moved from the device and onto my laptop (or into the cloud).
 
 ### Defining the machine learning problem
@@ -79,19 +79,28 @@ As inputs to my machine learning problem I will use all the sensor data from my 
 
 I use a one-hot encoder to encode the timestamp as a 3 categorial values: weekday, hour and minute in 10-minute intervals.  
 
-#### Picking a machine learning model
-Since we are dealing with a classification problem we have a number of models available to us.
+### Picking a machine learning model
+For my machine learning model I will use the Random Forest algorithm. The random forest algorithm is an easy to use machine learning algorithm that works for both classification and regression problems. The algorithm is good at isolating the signal in a machine learning problem and has a natural resilience to overfitting.
 
-For this project I will test the following:
-- SVM with different kernels (Gaussian, Linear)
-- Logistic Regression
-- Neural Network (a couple of different architectures)
-- Random Forest
+To build my models I use the scikit learn library from python. To install scikit learn and its dependencies for python 3 run: pip3 install scipy sklearn numpy.
 
-To pick the best model I run a 5 fold cross validation and pick the algorithm with the lowest classification error. To train the models and perform cross validation I use the scikit learn library from python. To install the scikit learn library run: pip3 install scipy sklearn numpy.
+#### Testing and visualizing the machine learning model
+To validate the machine learning models I calculated the models classification accuracy using a hold-out validation with a split of 80% training and 20% test data. Additionally I create a web-based interface where the user can try to set the status of the input device and the timestamp, and execute the model to see the state of the output device without having to hook it up to my actual devices.
+
+#### Model 1 - One model to rule them all
+My first attempt was to create one machine learning model to predict all my output devices in one go. The model would take all my input devices and the coded timestamp as input, and output the state of all my switches and dimmers as the output.
+
+This model did achieve a high accuracy score, but when I put the model to the test in my model visualizer I noticed that it would never turn on my power switch on. This is because the switch state is directly associated with one of the input parameters, the power monitor. Having a direct correlation between the input and output parameter meant the model was not able to learn when to turn the switch on.
+
+#### Model 2 - Divide and conquer
+For my second model attempt I decided to train one model for each of my output devices. For each output device I created a model that took all input sensors, except if the sensor is from the output device, and a coded timestamp as input, and the output would be the state of that specific device.
 
 
 
+
+
+
+To pick the best model I run a 5 fold cross validation and pick the algorithm with the lowest classification error. To train the models and perform cross validation I use the scikit learn library from python.
 
 
 

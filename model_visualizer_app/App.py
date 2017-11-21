@@ -32,13 +32,16 @@ home.update_devices()
 
 # Load prediction models and preprocessing encoder
 encoder = joblib.load('./models/feature_vector_encoder.pkl')
-model = joblib.load('./models/random_forest_model.pkl')
 
+output_devices = home.get_home_state().output_devices()
+models = {}
+for device in output_devices:
+    models[device['device_id']] = joblib.load('./models/random_forest_model_device_{}.pkl'.format(device['device_id']))
 
 @route('/')
 def index():
     prediction = ""
-    return template('./model_visualizer_app/views/index', home=home, prediction=prediction)
+    return template('./model_visualizer_app/views/index', home=home, prediction=prediction, time=datetime.now())
 
 
 @route('/calculate')
@@ -63,13 +66,18 @@ def calculate():
     # Update time stamp
     home_state.time = datetime.strptime(request.query['time'], "%Y-%m-%dT%H:%M")
 
-    # Run through model
-    feature_vector = home_state.feature_vector()
-    feature_vector = encoder.transform([feature_vector])
+    # Run through each model
+    prediction = {}
+    for device in output_devices:
+        feature_vector = home_state.feature_vector_for_output_device(device)
+        feature_vector = encoder.transform([feature_vector])
 
-    prediction = model.predict(feature_vector)
+        print(feature_vector)
+        print(models[device['device_id']].predict(feature_vector))
 
-    return template('./model_visualizer_app/views/index', home=home, prediction=prediction)
+        prediction[device['device_id']] = models[device['device_id']].predict(feature_vector)
+
+    return template('./model_visualizer_app/views/index', home=home, prediction=prediction, time=home_state.time)
 
 
 @route('/static/<path:path>')

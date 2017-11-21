@@ -14,7 +14,6 @@ from sklearn.ensemble import RandomForestClassifier as ClassificationModel
 from sklearn.model_selection import train_test_split
 
 from sklearn.metrics import accuracy_score
-
 from sklearn.externals import joblib
 
 config = configparser.ConfigParser()
@@ -47,50 +46,35 @@ ViewDefinitions.sync(couchdb)
 # Load all home states in the database
 home_states = HomeState.view(couchdb, "_design/home_state/_view/by_time")
 
-first_home_state = HomeState.view(couchdb, "_design/home_state/_view/by_time", limit=1).rows[0]
-
-# Get all output devices in this home
-output_devices = first_home_state.output_devices()
-
-# Generate dataset from home states for each output device
-Xs = {}
-ys = {}
-for device in output_devices:
-    print("Generating training set for ", device['name'])
-    # Initialize empty X and y datasets for out output device
-    Xs[device['device_id']] = []
-    ys[device['device_id']] = []
-    # For each home state generate the datasets
-    for home in home_states:
-        Xs[device['device_id']].append(home.feature_vector_for_output_device( device ))
-        ys[device['device_id']].append(home.output_vector_for_device_id( device['device_id'] ))
+# Generate dataset from home states
+X = []
+y = []
+for home in home_states:
+    X.append(home.feature_vector())
+    y.append(home.output_vector())
 
 # Now code the time values (weekday, hour and minute) as categorial features in one-of-k (aka one-hot) scheme
 encoder = OneHotEncoder(categorical_features=[0,1,2], sparse=False) # One code feature 0,1 and 2
+X = encoder.fit_transform(X)
 
-for device in output_devices:
-    print("Training model for ", device['name'])
-    X = Xs[device['device_id']]
-    y = ys[device['device_id']]
+# Split into random training and test set
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=gmtime().tm_sec) #2)
 
-    # Encode time values using encoder
-    X = encoder.fit_transform(X)
+# Fit to model
+model = ClassificationModel()
 
-    # Split into random training and test set
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=gmtime().tm_sec) #2)
+model.fit(X_train, y_train)
 
-    # Fit to model
-    model = ClassificationModel()
+y_predictions = model.predict(X_test)
 
-    model.fit(X_train, y_train)
+# Extract predictions for each output variable and calculate accuracy and f1 score
+for ov in range(len(y_test[0])):
+    variable_y_predictions = [prediction[ov] for prediction in y_predictions]
+    variable_y_test = [test[ov] for test in y_test]
+    print("Accuracy Score for output variable {}: {} %".format(ov, round(accuracy_score(variable_y_test, variable_y_predictions, True)*100, 2)))
+    #print("F1 Score for output variable {}: {}".format(ov, f1_score(variable_y_test, variable_y_predictions)))
 
-    y_predictions = model.predict(X_test)
+# Store the preprocessor and model
 
-    # Score predictions - calculate accuracy and f1 score
-    print("Accuracy Score: {} %".format(round(accuracy_score(y_test, y_predictions, True)*100, 2)))
-
-    # Store the preprocessor and model
-    joblib.dump(model, "models/random_forest_model_device_{}.pkl".format(device['device_id']))
-
-# Store encoder
 joblib.dump(encoder, "models/feature_vector_encoder.pkl")
+joblib.dump(model, "models/random_forest_model.pkl")
