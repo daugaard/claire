@@ -1,0 +1,15 @@
+/* The animation code */
+@keyframes example {
+   from {background-color: #F99;}
+}
+
+/* The element to apply the animation to */
+.updated {
+   background-color: red;
+   animation-name: example;
+   animation-duration: 4s;
+}
+
+.jumbotron {
+  padding-bottom: 1em;
+}

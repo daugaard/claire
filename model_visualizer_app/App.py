@@ -40,7 +40,7 @@ for device in output_devices:
 
 @route('/')
 def index():
-    prediction = ""
+    prediction = {}
     return template('./model_visualizer_app/views/index', home=home, prediction=prediction, time=datetime.now())
 
 
@@ -75,7 +75,7 @@ def calculate():
         print(feature_vector)
         print(models[device['device_id']].predict(feature_vector))
 
-        prediction[device['device_id']] = models[device['device_id']].predict(feature_vector)
+        prediction[device['device_id']] = models[device['device_id']].predict(feature_vector)[0]
 
     return template('./model_visualizer_app/views/index', home=home, prediction=prediction, time=home_state.time)
 

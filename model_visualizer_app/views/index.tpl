@@ -13,7 +13,7 @@
     <link href="/static/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom styles for this template -->
-    <link href="/static/css/jumbotron.css" rel="stylesheet">
+    <link href="/static/css/claire.css" rel="stylesheet">
   </head>
 
   <body>
@@ -98,9 +98,9 @@
                     % elif device.type == 'BinaryPowerSwitchDevice':
                     <div class="form-group">
                       <label for="binary-switch">Switch State</label>
-                      <select name="{{device.device_id}}-state" class="form-control" readonly>
-                        <option value="255" {{"selected" if device.state > 0 else ""}}>On</option>
-                        <option value="0" {{"selected" if device.state == 0 else ""}}>Off</option>
+                      <select name="{{device.device_id}}-state" class="form-control updated" readonly>
+                        <option value="255" {{"selected" if prediction[device.device_id] > 0 else ""}}>On</option>
+                        <option value="0" {{"selected" if prediction[device.device_id] == 0 else ""}}>Off</option>
                       </select>
                     </div>
                     <div class="form-group">
@@ -110,7 +110,7 @@
                     % elif device.type == 'DimmerDevice':
                     <div class="form-group">
                       <label for="state">Dimmer State:</label>
-                      <input name="{{device.device_id}}-state" value="{{device.state}}" class="form-control" readonly="readonly">
+                      <input name="{{device.device_id}}-state" value="{{prediction[device.device_id]}}" class="form-control updated" readonly="readonly">
                     </div>
                     % else:
                     <span>No controls</span>
