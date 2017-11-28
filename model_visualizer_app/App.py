@@ -41,6 +41,9 @@ for device in output_devices:
 @route('/')
 def index():
     prediction = {}
+    for device in output_devices:
+        prediction[device['device_id']] = device['state']
+
     return template('./model_visualizer_app/views/index', home=home, prediction=prediction, time=datetime.now())
 
 
@@ -71,9 +74,6 @@ def calculate():
     for device in output_devices:
         feature_vector = home_state.feature_vector_for_output_device(device)
         feature_vector = encoder.transform([feature_vector])
-
-        print(feature_vector)
-        print(models[device['device_id']].predict(feature_vector))
 
         prediction[device['device_id']] = models[device['device_id']].predict(feature_vector)[0]
 

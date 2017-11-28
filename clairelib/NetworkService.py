@@ -45,15 +45,15 @@ class NetworkService():
                 # Create device
                 device = None
                 if int(endpoint.get('generic')) == 17: # Dimmer
-                    device = DimmerDevice(endpoint.get('desc'), endpoint.get('name'), 0)
+                    device = DimmerDevice(endpoint.get('desc'), endpoint.get('name'), endpoint.get("loc"), 0)
                 elif int(endpoint.get('generic')) == 16: # Binary Power Switch
-                    device = BinaryPowerSwitchDevice(endpoint.get('desc'), endpoint.get('name'), 0)
+                    device = BinaryPowerSwitchDevice(endpoint.get('desc'), endpoint.get('name'), endpoint.get("loc"), 0)
                 elif int(endpoint.get('generic')) == 32: # Binary Sensor
-                    device = BinarySensorDevice(endpoint.get('desc'), endpoint.get('name'), 0)
+                    device = BinarySensorDevice(endpoint.get('desc'), endpoint.get('name'), endpoint.get("loc"), 0)
                 elif int(endpoint.get('generic')) == 33: # Multi Sensor
-                    device = MultiSensorDevice(endpoint.get('desc'), endpoint.get('name'), 0)
+                    device = MultiSensorDevice(endpoint.get('desc'), endpoint.get('name'),endpoint.get("loc"), 0)
                 else:
-                    device = BasicDevice( endpoint.get('desc'), endpoint.get('name'), 0 )
+                    device = BasicDevice( endpoint.get('desc'), endpoint.get('name'),endpoint.get("loc"), 0 )
                 devices.append(device)
 
         return devices

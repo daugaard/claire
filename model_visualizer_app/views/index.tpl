@@ -70,7 +70,7 @@
             % for device in home.devices:
                 % if device.type in ('BinarySensorDevice', 'BinaryPowerSwitchDevice', 'DimmerDevice', 'MultiSensorDevice'):
                   <div class="col-md-4" id="device_id_{{device.device_id}}">
-                    <h2>{{device.name}}</h2>
+                    <h2>{{device.name}} <span class="location">{{device.location}}</span></h2>
                     % if device.type == 'BinarySensorDevice':
                     <div class="form-group">
                       <label for="binary-sensor">Sensor State</label>
