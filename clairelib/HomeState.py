@@ -1,6 +1,6 @@
 # A state representation at the home at a specific time.
 # This class is based on the CouchDB document class to allow for it to be easily stored and retrieved.
-
+from datetime import datetime
 from couchdb.mapping import Document, TextField, IntegerField, BooleanField, DateTimeField, ListField, DictField
 
 class HomeState(Document):
@@ -13,12 +13,16 @@ class HomeState(Document):
 
     def feature_vector(self):
         feature_vector = []
+
+        # Ensure all times are in UTC when creating feature vectors
+        utctime = datetime.utcfromtimestamp( self.time.timestamp() )
+
         # Append with day of week
-        feature_vector.append( self.time.weekday() )
+        feature_vector.append( utctime.weekday() )
 
         # Append with hour and minute number in 10 minutes interval
-        feature_vector.append( self.time.hour )
-        feature_vector.append( int(self.time.minute/10) )
+        feature_vector.append( utctime.hour )
+        feature_vector.append( int(utctime.minute/10) )
 
         # Loop over all devices sorted by ID - this will ensure the same order of features for every feature vector
         for device in sorted(self.devices, key=lambda d: d['device_id']):
@@ -30,12 +34,16 @@ class HomeState(Document):
 
     def feature_vector_for_output_device(self, output_device):
         feature_vector = []
+
+        # Ensure all times are in UTC when creating feature vectors
+        utctime = datetime.utcfromtimestamp( self.time.timestamp() )
+
         # Append with day of week
-        feature_vector.append( self.time.weekday() )
+        feature_vector.append( utctime.weekday() )
 
         # Append with hour and minute number in 10 minutes interval
-        feature_vector.append( self.time.hour )
-        feature_vector.append( int(self.time.minute/10) )
+        feature_vector.append( utctime.hour )
+        feature_vector.append( int(utctime.minute/10) )
 
         # Loop over all devices sorted by ID - this will ensure the same order of features for every feature vector
         for device in sorted(self.devices, key=lambda d: d['device_id']):

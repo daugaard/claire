@@ -18,6 +18,11 @@ class Home:
 
         return anything_changed
 
+    def change_device_state(self, device_id, new_state):
+        # TODO: this is a hack and should be changed
+        new_state = 255 if new_state == 1 else new_state
+        self.network_service.change_device_state(device_id, new_state)
+
     def get_home_state(self):
         h = HomeState(home_id=self.home_id, name=self.name, time=datetime.datetime.now())
         for d in self.devices:

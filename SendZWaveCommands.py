@@ -37,7 +37,7 @@ while True:
         command_class = command_classes[endpoint_i]
 
         command = input("Enter Z-Wave command name (e.g. sensor): ")
-        number = int(input("Enter command Numer (e.g. 2): "))
+        number = int(input("Enter command Number (e.g. 2): "))
         args = input("Enter command args (e.g. &unit=2): ")
 
         r = n.send_command(did, command_class, command, number, args)

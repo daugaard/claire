@@ -4,8 +4,10 @@ import configparser
 import logging
 import couchdb
 
-from lib.Home import Home
-from lib.NetworkService import NetworkService
+from clairelib.Home import Home
+from clairelib.NetworkService import NetworkService
+
+from sklearn.externals import joblib
 
 config = configparser.ConfigParser()
 config.read('config.cfg')
@@ -16,6 +18,7 @@ if not "General" in config.sections():
 
 # Configuration
 seconds_between_poll = config.getfloat("Automation", "seconds_between_poll")
+minutes_between_log = config.getfloat("DataLogger", "minutes_between_log")
 
 home_name = config.get("General", "home_name")
 
@@ -26,8 +29,11 @@ zware_password = config.get("ZWare", "zware_password")
 couchdb_server = config.get("CouchDB", "url")
 couchdb_name = config.get("CouchDB", "db")
 
-logfile = config.get("Log","logfile")
+logfile = config.get("Log","automation_logfile")
 ouput_log_to_console = config.getboolean("Log","ouput_log_to_console")
+
+# Load preprocessing encoder
+encoder = joblib.load('./models/feature_vector_encoder.pkl')
 
 # Initialize Python logger
 # set up logging to file - see previous section for more details
@@ -37,7 +43,7 @@ logging.basicConfig(level=logging.INFO,
                     filename=logfile,
                     filemode='a')
 
-logger = logging.getLogger('CLAIRE.DataLogger')
+logger = logging.getLogger('CLAIRE.Automation')
 
 if ouput_log_to_console:
     console = logging.StreamHandler()
@@ -49,13 +55,19 @@ if ouput_log_to_console:
     # add the handler to the root logger
     logging.getLogger('').addHandler(console)
 
-logger.info("Initializing CLAIRE DataLogger Module")
+logger.info("Initializing CLAIRE Automation Module")
 
 # Initialize network layer
 network_service = NetworkService(zware_address, zware_user, zware_password)
 
 # Initialize Home model
 home = Home(home_name, network_service)
+
+# Load all prediction models
+output_devices = home.get_home_state().output_devices()
+models = {}
+for device in output_devices:
+    models[device['device_id']] = joblib.load('./models/random_forest_model_device_{}.pkl'.format(device['device_id']))
 
 # Connect to CouchDB
 couch = couchdb.Server(couchdb_server)
@@ -69,25 +81,49 @@ except couchdb.http.ResourceNotFound:
 last_save = datetime.datetime(1999,1,1)
 
 while True:
-    logger.debug("Polling all devices")
+    logger.info("Polling all devices")
     anything_changed = False
 
     # Update devices
-    home.update_devices()
+    anything_changed = home.update_devices()
 
-    # Sample the current state
-    home_state = home.get_home_state()
+    if anything_changed:
+        # Store in CouchDB
+        logger.info("Something changed - store in CouchDB")
 
-    # Get feature fector
-    feature_vector = home_state.feature_vector()
+        # Sample the current state
+        home_state = home.get_home_state()
+        home_state.periodic_update = False
+        home_state.store(couchdb)
 
-    # Predict
-    prediction = []
+        # Predict
+        predictions = {}
+        for device in output_devices:
+            feature_vector = home_state.feature_vector_for_output_device(device)
+            feature_vector = encoder.transform([feature_vector])
 
-    # Does prediction match current output vector
-    if prediction != home_state.output_vector():
-        # Execute automation to make state match the predicted state from the machine learning model
+            predictions[device['device_id']] = models[device['device_id']].predict(feature_vector)
 
+        # Does prediction match current state
+        for device in home_state.output_devices():
+            # If prediction is different from output vector we need to update the state
+            if predictions[device['device_id']] != home_state.output_vector_device(device):
+                # Execute automation to make state match the predicted state from the machine learning model
+                logger.info(str.format("Device {} state {} differs from prediction {}. Executing automation.",device['name'], device['state'], predictions[device['device_id']]))
+                # Actually change the state
+                home.change_device_state(device['device_id'], predictions[device['device_id']][0])
+    else:
+        # If more than X since last save also store in couchdb
+        delta = datetime.datetime.now() - last_save
+
+        if (delta.seconds  / 60) >= minutes_between_log:
+            # Store in CouchDB
+            logger.info("Peridic store in CouchDB")
+            home_state = home.get_home_state()
+            home_state.periodic_update = True
+            home_state.store(couchdb)
+
+            last_save = datetime.datetime.now()
 
     # Sleep seconds_between_poll
     time.sleep(seconds_between_poll)

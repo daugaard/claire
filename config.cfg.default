@@ -8,10 +8,11 @@ zware_password: sigmadesigns
 
 [DataLogger]
 minutes_between_log: 5
-seconds_between_poll: 0.5
+seconds_between_poll: 1
 
 [Automation]
-seconds_between_poll: 0.5
+seconds_between_poll: 1
+minutes_between_log: 5
 
 [CouchDB]
 url: http://localhost:5984/
@@ -19,4 +20,5 @@ db: claire_db_3
 
 [Log]
 logfile: ./log/claire_datalogger.log
-ouput_log_to_console: False
+automation_logfile: ./log/claire_automation_logger.log
+ouput_log_to_console: True

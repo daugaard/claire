@@ -146,6 +146,9 @@ class NetworkService():
 
         return anything_changed
 
+    def change_device_state(self, device_id, new_state):
+        self.send_command(device_id, 'COMMAND_CLASS_BASIC', 'basic', 4, str.format('&value={}', new_state))
+
     def get_command_classes(self, device_id):
         device_status = zware.zw_api("zwep_get_if_list", "epd=" + device_id)
 
