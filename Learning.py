@@ -1,6 +1,7 @@
 import configparser
 import logging
 from time import gmtime
+from datetime import datetime, timedelta
 
 import couchdb
 
@@ -10,6 +11,7 @@ import clairelib.couch.ViewDefinitions as ViewDefinitions
 
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.ensemble import RandomForestClassifier as ClassificationModel
+from sklearn.ensemble import RandomForestClassifier as RegressionModel
 
 from sklearn.model_selection import train_test_split
 
@@ -49,6 +51,9 @@ home_states = HomeState.view(couchdb, "_design/home_state/_view/by_time")
 
 first_home_state = HomeState.view(couchdb, "_design/home_state/_view/by_time", limit=1).rows[0]
 
+# Use this code if you only want to train on a subset of data
+#home_states = home_states[str(datetime.now()-timedelta(days=14)):str(datetime.now())]
+
 # Get all output devices in this home
 output_devices = first_home_state.output_devices()
 
@@ -69,7 +74,7 @@ for device in output_devices:
 encoder = OneHotEncoder(categorical_features=[0,1,2], sparse=False) # One code feature 0,1 and 2
 
 for device in output_devices:
-    print("Training model for ", device['name'])
+    print("Training model for", device['name'], "with type", device['type'])
     X = Xs[device['device_id']]
     y = ys[device['device_id']]
 
@@ -80,7 +85,10 @@ for device in output_devices:
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=gmtime().tm_sec) #2)
 
     # Fit to model
-    model = ClassificationModel()
+    if device['type'] == 'BinaryPowerSwitchDevice':
+        model = ClassificationModel()
+    else:
+        model = RegressionModel()
 
     model.fit(X_train, y_train)
 

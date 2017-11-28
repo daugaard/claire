@@ -7,6 +7,12 @@ views.append( ViewDefinition('home_state','by_time', '''function(doc) {
         emit(doc.time, doc);
 }''') )
 
+views.append( ViewDefinition('home_state','no_periodic_updates_by_time', '''function(doc) {
+        if(!doc.periodic_update) {
+            emit(doc.time, doc);
+        }
+}''') )
+
 views.append( ViewDefinition('home_state','by_name', '''function(doc) {
         emit(doc.name, doc);
 }''') )

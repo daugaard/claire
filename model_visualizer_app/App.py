@@ -67,7 +67,8 @@ def calculate():
     home_state = home.get_home_state()
 
     # Update time stamp
-    home_state.time = datetime.strptime(request.query['time'], "%Y-%m-%dT%H:%M")
+    timestamp = datetime.strptime(request.query['time'], "%Y-%m-%dT%H:%M")
+    home_state.time = timestamp.utcfromtimestamp(timestamp.timestamp())
 
     # Run through each model
     prediction = {}
@@ -77,7 +78,7 @@ def calculate():
 
         prediction[device['device_id']] = models[device['device_id']].predict(feature_vector)[0]
 
-    return template('./model_visualizer_app/views/index', home=home, prediction=prediction, time=home_state.time)
+    return template('./model_visualizer_app/views/index', home=home, prediction=prediction, time=timestamp)
 
 
 @route('/static/<path:path>')
