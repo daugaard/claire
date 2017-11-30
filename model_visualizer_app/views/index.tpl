@@ -58,7 +58,7 @@
                   </div>
                 </div>
               </div>
-              <p><input type="submit" class="btn btn-primary" value="Calculate"/> Prediction: {{prediction}}</p>
+              <p><input type="submit" class="btn btn-primary" value="Calculate"/></p>
             </div>
           </div>
 
@@ -98,7 +98,7 @@
                     % elif device.type == 'BinaryPowerSwitchDevice':
                     <div class="form-group">
                       <label for="binary-switch">Switch State</label>
-                      <select name="{{device.device_id}}-state" class="form-control updated" readonly>
+                      <select name="{{device.device_id}}-state" class="form-control {{"updated" if device_updated[device.device_id] else ""}}" readonly>
                         <option value="255" {{"selected" if prediction[device.device_id] > 0 else ""}}>On</option>
                         <option value="0" {{"selected" if prediction[device.device_id] == 0 else ""}}>Off</option>
                       </select>
@@ -110,7 +110,7 @@
                     % elif device.type == 'DimmerDevice':
                     <div class="form-group">
                       <label for="state">Dimmer State:</label>
-                      <input name="{{device.device_id}}-state" value="{{prediction[device.device_id]}}" class="form-control updated" readonly="readonly">
+                      <input name="{{device.device_id}}-state" value="{{prediction[device.device_id]}}" class="form-control {{"updated" if device_updated[device.device_id] else ""}}" readonly="readonly">
                     </div>
                     % else:
                     <span>No controls</span>

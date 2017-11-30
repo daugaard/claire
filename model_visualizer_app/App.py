@@ -41,10 +41,12 @@ for device in output_devices:
 @route('/')
 def index():
     prediction = {}
+    device_updated = {}
     for device in output_devices:
         prediction[device['device_id']] = device['state']
+        device_updated[device['device_id']] = False
 
-    return template('./model_visualizer_app/views/index', home=home, prediction=prediction, time=datetime.now())
+    return template('./model_visualizer_app/views/index', home=home, prediction=prediction, time=datetime.now(), device_updated=device_updated)
 
 
 @route('/calculate')
@@ -72,13 +74,26 @@ def calculate():
 
     # Run through each model
     prediction = {}
+    device_updated = {}
     for device in output_devices:
         feature_vector = home_state.feature_vector_for_output_device(device)
         feature_vector = encoder.transform([feature_vector])
 
+        # Preform prediction
         prediction[device['device_id']] = models[device['device_id']].predict(feature_vector)[0]
 
-    return template('./model_visualizer_app/views/index', home=home, prediction=prediction, time=home_state.time)
+        # Change predictions for Binary Power Switch Devices from binary to 0 or 255
+        if device['type'] == 'BinaryPowerSwitchDevice':
+            prediction[device['device_id']] = 255 if prediction[device['device_id']] == 1 else 0
+
+        # Set device as updated if prediction is different from current state
+        if prediction[device['device_id']] != int(request.query["{}-state".format(device['device_id'])]):
+            device_updated[device['device_id']] = True
+        else:
+            device_updated[device['device_id']] = False
+
+
+    return template('./model_visualizer_app/views/index', home=home, prediction=prediction, time=home_state.time, device_updated=device_updated)
 
 
 @route('/static/<path:path>')
