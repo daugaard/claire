@@ -1,5 +1,6 @@
 from bottle import route, run, template, static_file, request
 
+import sys
 import configparser
 
 from datetime import datetime
@@ -8,6 +9,8 @@ from clairelib.Home import Home
 from clairelib.NetworkService import NetworkService
 
 from sklearn.externals import joblib
+
+demo = True if "demo" in str(sys.argv) else False
 
 config = configparser.ConfigParser()
 config.read('config.cfg')
@@ -23,12 +26,22 @@ zware_address = config.get("ZWare", "zware_address")
 zware_user = config.get("ZWare", "zware_user")
 zware_password = config.get("ZWare", "zware_password")
 
-# Initialize network layer
-network_service = NetworkService(zware_address, zware_user, zware_password)
+if demo:
+    # Initialize home in debug mode if we start with the demo flag
+    print("Starting in DEMO mode.")
 
-# Initialize Home model
-home = Home(home_name, network_service)
-home.update_devices()
+    from clairelib.DemoHome import DemoHome
+
+    # Initialize Home model
+    home = DemoHome(home_name)
+
+else:
+    # Initialize network layer
+    network_service = NetworkService(zware_address, zware_user, zware_password)
+
+    # Initialize Home model
+    home = Home(home_name, network_service)
+    home.update_devices()
 
 # Load prediction models and preprocessing encoder
 encoder = joblib.load('./models/feature_vector_encoder.pkl')
@@ -78,7 +91,7 @@ def calculate():
     for device in output_devices:
         feature_vector = home_state.feature_vector_for_output_device(device)
         feature_vector = encoder.transform([feature_vector])
-
+        
         # Preform prediction
         prediction[device['device_id']] = models[device['device_id']].predict(feature_vector)[0]
 

@@ -61,7 +61,7 @@ output_devices = first_home_state.output_devices()
 Xs = {}
 ys = {}
 for device in output_devices:
-    print("Generating training set for ", device['name'])
+    print("Generating training set for", device['name'])
     # Initialize empty X and y datasets for out output device
     Xs[device['device_id']] = []
     ys[device['device_id']] = []

@@ -106,6 +106,12 @@ For my second model I decided to split the problem into one machine learning pro
 I trained one model for each of my output devices, and for each output device I created a model that took all input sensors, except if the sensor is from the output device we are trying to predict, and an encoded timestamp as input. The output of the models would be the state of that specific device.
 
 
+| Device | Random Forest Accuracy | Neural Network |
+| ------ | - | - |
+| Light 1 | 99.09% | 99.03% |
+| Light 2 | 99.56% | 98.03% |
+| AV Switch 1 | 95.86% | 94.3 |
+
 
  MORE TO COME...
 

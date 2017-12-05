@@ -18,7 +18,7 @@ class HomeState(Document):
         utctime = datetime.utcfromtimestamp( self.time.timestamp() )
 
         # Append with day of week
-        feature_vector.append( utctime.weekday() )
+        feature_vector.append( utctime.weekday() + 1 )
 
         # Append with hour and minute number in 10 minutes interval
         feature_vector.append( utctime.hour )
@@ -39,7 +39,7 @@ class HomeState(Document):
         utctime = datetime.utcfromtimestamp( self.time.timestamp() )
 
         # Append with day of week
-        feature_vector.append( utctime.weekday() )
+        feature_vector.append( utctime.weekday() + 1 )
 
         # Append with hour and minute number in 10 minutes interval
         feature_vector.append( utctime.hour )
