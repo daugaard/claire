@@ -86,7 +86,7 @@ I use one-hot encoding to encode the timestamp as a 3 categorial values: weekday
 For my machine learning model I will use the Random Forest algorithm. The random forest algorithm is an easy to use machine learning algorithm that works for both classification and regression problems. The algorithm is good at isolating the signal from noise in data and has a natural resilience to overfitting.
 
 To build my models I use the scikit learn library from python.
-To install scikit learn and its dependencies for python 3 run: pip3 install scipy sklearn numpy.
+To install scikit learn and its dependencies for python 3 run: pip3 install numpy sklearn scipy.
 
 #### Testing and visualizing the machine learning model
 To validate and test the machine learning models I measure the models classification accuracy using a hold-out validation method with a split of 80% training and 20% test data.
