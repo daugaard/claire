@@ -14,12 +14,24 @@
 
     <!-- Custom styles for this template -->
     <link href="/static/css/claire.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" >
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-100465196-2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-100465196-2');
+    </script>
   </head>
 
   <body>
 
     <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-      <a class="navbar-brand" href="#">CLAIRE Model Visualizer</a>
+      <a class="navbar-brand" href="#"><i class="fa fa-home" aria-hidden="true"></i>  CLAIRE Model Visualizer</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -58,7 +70,10 @@
                   </div>
                 </div>
               </div>
-              <p><input type="submit" class="btn btn-primary" value="Calculate"/></p>
+              <p>
+                <button type="submit" form="main-form" value="Submit" class="btn btn-success">
+                  <i class="fa fa-cogs" aria-hidden="true"></i> Run AI model on sensor input and time stamp</button>
+              </p>
             </div>
           </div>
 
