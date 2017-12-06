@@ -18,7 +18,10 @@ if not "General" in config.sections():
 
 # Configuration
 seconds_between_poll = config.getfloat("Automation", "seconds_between_poll")
-minutes_between_log = config.getfloat("DataLogger", "minutes_between_log")
+minutes_between_log = config.getfloat("Automation", "minutes_between_log")
+
+switch_threshold = float(config.get("Automation", "switch_threshold"))
+dimmer_threshold = int(config.get("Automation", "dimmer_threshold"))
 
 home_name = config.get("General", "home_name")
 
@@ -102,7 +105,15 @@ while True:
             feature_vector = home_state.feature_vector_for_output_device(device)
             feature_vector = encoder.transform([feature_vector])
 
-            predictions[device['device_id']] = models[device['device_id']].predict(feature_vector)
+            # Preform prediction
+            if device['type'] == 'BinaryPowerSwitchDevice':
+                # Return probablity of switch being on
+                probabilities = prediction[device['device_id']] = models[device['device_id']].predict_proba(feature_vector)[0]
+                # Prediction thredshold set at 40% if algorithm is 40% sure the binary switch is no - turn it on
+                prediction[device['device_id']] = 255 if prediction[device['device_id']][1] > switch_threshold else 0
+            else:
+                prediction[device['device_id']] = models[device['device_id']].predict(feature_vector)
+                prediction[device['device_id']] = int(prediction[device['device_id']]) if prediction[device['device_id']] > dimmer_threshold else 0
 
         # Does prediction match current state
         for device in home_state.output_devices():

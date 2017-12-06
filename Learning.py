@@ -11,11 +11,14 @@ import clairelib.couch.ViewDefinitions as ViewDefinitions
 
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.ensemble import RandomForestClassifier as ClassificationModel
-from sklearn.ensemble import RandomForestClassifier as RegressionModel
+from sklearn.ensemble import RandomForestRegressor as RegressionModel
 
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score
+from numpy import *
 
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import mean_squared_error
 
 from sklearn.externals import joblib
 
@@ -86,16 +89,22 @@ for device in output_devices:
 
     # Fit to model
     if device['type'] == 'BinaryPowerSwitchDevice':
-        model = ClassificationModel()
+        model = ClassificationModel(n_estimators=100,max_features='auto',n_jobs=-1, class_weight='balanced_subsample') #{0:1,1:2}
     else:
-        model = RegressionModel()
+        model = RegressionModel(n_estimators=10,max_features='log2',n_jobs=-1)
 
-    model.fit(X_train, y_train)
+    print("Cross Validation Score: ", round(mean(cross_val_score(model, X, y))*100,2))
+
+    model.fit(X, y)
 
     y_predictions = model.predict(X_test)
 
     # Score predictions - calculate accuracy and f1 score
-    print("Accuracy Score: {} %".format(round(accuracy_score(y_test, y_predictions, True)*100, 2)))
+    if device['type'] == 'BinaryPowerSwitchDevice':
+        print("Accuracy Score: {} %".format(round(accuracy_score(y_test, y_predictions, True)*100, 2)))
+    else:
+        print("Mean Sq. Error Score: {}".format(round(mean_squared_error(y_test, y_predictions),2)))
+
 
     # Store the preprocessor and model
     joblib.dump(model, "models/random_forest_model_device_{}.pkl".format(device['device_id']))

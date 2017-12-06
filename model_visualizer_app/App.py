@@ -22,6 +22,9 @@ if not "General" in config.sections():
 # Configuration
 home_name = config.get("General", "home_name")
 
+switch_threshold = float(config.get("Automation", "switch_threshold"))
+dimmer_threshold = int(config.get("Automation", "dimmer_threshold"))
+
 zware_address = config.get("ZWare", "zware_address")
 zware_user = config.get("ZWare", "zware_user")
 zware_password = config.get("ZWare", "zware_password")
@@ -68,15 +71,15 @@ def calculate():
     for device in home.devices:
         if device.type == 'BinarySensorDevice':
             device.state = int(request.query["{}-state".format(device.device_id)])
-            print('Updated state to {} for BinarySensorDevice device id {}'.format(device.state,device.device_id))
+            #print('Updated state to {} for BinarySensorDevice device id {}'.format(device.state,device.device_id))
         elif device.type == 'MultiSensorDevice':
             device.state = int(request.query["{}-state".format(device.device_id)])
             device.lux = int(request.query["{}-lux".format(device.device_id)])
             device.temperature = float(request.query["{}-temperature".format(device.device_id)])
-            print('Updated state to {}, {}, {} for MultiSensorDevice device id {}'.format(device.state, device.lux, device.temperature,device.device_id))
+            #print('Updated state to {}, {}, {} for MultiSensorDevice device id {}'.format(device.state, device.lux, device.temperature,device.device_id))
         elif device.type == 'BinaryPowerSwitchDevice':
             device.power_state = float(request.query["{}-power_state".format(device.device_id)])
-            print('Updated power state to {} for BinaryPowerSwitchDevice device id {}'.format(device.power_state,device.device_id))
+            #print('Updated power state to {} for BinaryPowerSwitchDevice device id {}'.format(device.power_state,device.device_id))
 
     # Get new home state after updating devices
     home_state = home.get_home_state()
@@ -91,13 +94,16 @@ def calculate():
     for device in output_devices:
         feature_vector = home_state.feature_vector_for_output_device(device)
         feature_vector = encoder.transform([feature_vector])
-        
-        # Preform prediction
-        prediction[device['device_id']] = models[device['device_id']].predict(feature_vector)[0]
 
-        # Change predictions for Binary Power Switch Devices from binary to 0 or 255
+        # Preform prediction
         if device['type'] == 'BinaryPowerSwitchDevice':
-            prediction[device['device_id']] = 255 if prediction[device['device_id']] == 1 else 0
+            # Return probablity of switch being on
+            probabilities = prediction[device['device_id']] = models[device['device_id']].predict_proba(feature_vector)[0]
+            # Prediction thredshold set at 40% if algorithm is 40% sure the binary switch is no - turn it on
+            prediction[device['device_id']] = 255 if prediction[device['device_id']][1] > switch_threshold else 0
+        else:
+            prediction[device['device_id']] = models[device['device_id']].predict(feature_vector)
+            prediction[device['device_id']] = int(prediction[device['device_id']]) if prediction[device['device_id']] > dimmer_threshold else 0
 
         # Set device as updated if prediction is different from current state
         if prediction[device['device_id']] != int(request.query["{}-state".format(device['device_id'])]):

@@ -18,7 +18,7 @@ class HomeState(Document):
         utctime = datetime.utcfromtimestamp( self.time.timestamp() )
 
         # Append with day of week
-        feature_vector.append( utctime.weekday() + 1 )
+        feature_vector.append( utctime.weekday() )
 
         # Append with hour and minute number in 10 minutes interval
         feature_vector.append( utctime.hour )
@@ -39,11 +39,11 @@ class HomeState(Document):
         utctime = datetime.utcfromtimestamp( self.time.timestamp() )
 
         # Append with day of week
-        feature_vector.append( utctime.weekday() + 1 )
+        feature_vector.append( utctime.weekday() )
 
-        # Append with hour and minute number in 10 minutes interval
+        # Append with hour and minute number in 15 minutes interval
         feature_vector.append( utctime.hour )
-        feature_vector.append( int(utctime.minute/10) )
+        feature_vector.append( utctime.minute/15 )
 
         # Loop over all devices sorted by ID - this will ensure the same order of features for every feature vector
         for device in sorted(self.devices, key=lambda d: d['device_id']):
