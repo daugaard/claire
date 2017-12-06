@@ -84,7 +84,7 @@ except couchdb.http.ResourceNotFound:
 last_save = datetime.datetime(1999,1,1)
 
 while True:
-    logger.info("Polling all devices")
+    logger.debug("Polling all devices")
     anything_changed = False
 
     # Update devices
@@ -108,21 +108,21 @@ while True:
             # Preform prediction
             if device['type'] == 'BinaryPowerSwitchDevice':
                 # Return probablity of switch being on
-                probabilities = prediction[device['device_id']] = models[device['device_id']].predict_proba(feature_vector)[0]
+                probabilities = models[device['device_id']].predict_proba(feature_vector)[0]
                 # Prediction thredshold set at 40% if algorithm is 40% sure the binary switch is no - turn it on
-                prediction[device['device_id']] = 255 if prediction[device['device_id']][1] > switch_threshold else 0
+                predictions[device['device_id']] = 255 if probabilities[1] > switch_threshold else 0
             else:
-                prediction[device['device_id']] = models[device['device_id']].predict(feature_vector)
-                prediction[device['device_id']] = int(prediction[device['device_id']]) if prediction[device['device_id']] > dimmer_threshold else 0
+                predictions[device['device_id']] = models[device['device_id']].predict(feature_vector)
+                predictions[device['device_id']] = int(predictions[device['device_id']]) if predictions[device['device_id']] > dimmer_threshold else 0
 
         # Does prediction match current state
         for device in home_state.output_devices():
             # If prediction is different from output vector we need to update the state
-            if predictions[device['device_id']] != home_state.output_vector_device(device):
+            if predictions[device['device_id']] != home_state.output_vector_device(device)[0]:
                 # Execute automation to make state match the predicted state from the machine learning model
                 logger.info(str.format("Device {} state {} differs from prediction {}. Executing automation.",device['name'], device['state'], predictions[device['device_id']]))
                 # Actually change the state
-                home.change_device_state(device['device_id'], predictions[device['device_id']][0])
+                home.change_device_state(device['device_id'], predictions[device['device_id']])
     else:
         # If more than X since last save also store in couchdb
         delta = datetime.datetime.now() - last_save
