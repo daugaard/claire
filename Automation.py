@@ -118,7 +118,7 @@ while True:
         # Does prediction match current state
         for device in home_state.output_devices():
             # If prediction is different from output vector we need to update the state
-            if predictions[device['device_id']] != home_state.output_vector_device(device)[0]:
+            if predictions[device['device_id']] != device['state']:
                 # Execute automation to make state match the predicted state from the machine learning model
                 logger.info(str.format("Device {} state {} differs from prediction {}. Executing automation.",device['name'], device['state'], predictions[device['device_id']]))
                 # Actually change the state
