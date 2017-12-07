@@ -82,16 +82,19 @@ As inputs to my machine learning problem I will use all the sensor data from my 
 
 I use one-hot encoding to encode the timestamp as a 3 categorial values: weekday, hour and minute in 10-minute intervals.  
 
+#### Testing and visualizing the machine learning model
+To validate and test the machine learning models I measure the models classification accuracy using a hold-out validation method with a split of 80% training and 20% test data.
+
+Additionally to better visualize the model I created a web-based interface. The web interface allows the user to set the status of the input devices and the timestamp, and then execute the model to see the state of the output device. This allows me to test the algorithms without having to hook it up to my actual devices.
+
+I've setup a publicly available version of the version tester you can access here: http://claire.practicalai.io/. Its running the latest version of the model so you can test the model yourself.
+
 ### Picking a machine learning model
 For my machine learning model I will use the Random Forest algorithm. The random forest algorithm is an easy to use machine learning algorithm that works for both classification and regression problems. The algorithm is good at isolating the signal from noise in data and has a natural resilience to overfitting.
 
 To build my models I use the scikit learn library from python.
 To install scikit learn and its dependencies for python 3 run: pip3 install numpy sklearn scipy.
 
-#### Testing and visualizing the machine learning model
-To validate and test the machine learning models I measure the models classification accuracy using a hold-out validation method with a split of 80% training and 20% test data.
-
-Additionally to better visualize the model I created a web-based interface. The web interface allows the user to set the status of the input devices and the timestamp, and then execute the model to see the state of the output device. This allows me to test the algorithms without having to hook it up to my actual devices.
 
 #### Model 1 - One model to rule them all
 My first attempt was to create one machine learning model to predict all my output devices in one go. The model would take all my input devices and the encoded timestamp as input, and output the state of all my switches and dimmers as the output.
@@ -105,25 +108,31 @@ For my second model I decided to split the problem into one machine learning pro
 
 I trained one model for each of my output devices, and for each output device I created a model that took all input sensors, except if the sensor is from the output device we are trying to predict, and an encoded timestamp as input. The output of the models would be the state of that specific device.
 
-
-| Device | Random Forest Accuracy | Neural Network |
-| ------ | - | - |
-| Light 1 | 99.09% | 99.03% |
-| Light 2 | 99.56% | 98.03% |
-| AV Switch 1 | 95.86% | 94.3 |
-
-
- MORE TO COME...
-
-
-
-To pick the best model I run a 5 fold cross validation and pick the algorithm with the lowest classification error. To train the models and perform cross validation I use the scikit learn library from python.
-
-
+This model worked quite well so I decided to put it into use in my home.
 
 ## Phase 3: Automation
-In phase 3 I plan to put the network to work. I will integrate the neural network with the Z/IP gateway so I can continously read the current state of my home and use that to predict any changes to the state based on sensor data.
-The network will predict either every few minutes or whenever a sensor triggers or state changes and execute any changes to the house state. For example it should be able to learn simple rules like: whenever the movement sensor in the hallway triggers it should turn the light on and if it's after 10pm set it to 50%.
+In phase 3 I combined the data logging script with the automation models I created in step 2.
+
+The automation script was programmed to continously monitor the Z-Wave network, if it detects any changes to the devices it will run the prediction models and adjust the status of the output devices accordingly. Additionally it will store the state of the network in the CouchDB database so you don't need to have both the datalogger and automation script running at the same time.
+
+After putting the automation script into use, and running it for a few days, I found that the machine learning models have been able to capture the following rules into my home:
+
+    If I am in the office in the morning turn on the lights
+    When the sun rises turn off the office lights (around 10:30 to 11am)
+    If I am in the office in the afternoon when the sun sets turn on the lights (approx. after 4pm)
+    If I am not in the office keep the lights off
+    If I am in the living room in the evening turn the light and the AV system on
+    When I am in the living room in the morning keep the AV switch and TV light turned off since I am just grabbing breakfast and wont watch TV
+    If I am in the living room in the evening on Sundays keep the lights and AV system on, but dim the lights since I am likely watching a movie
+    When I leave the living room at night turn off the light and the AV system
+
+I am very impressed with the number of rules the machine learning models managed to capture. Some of these rules I would never had thought to implement myself, but are nonetheless very useful.
+
+An example is how the system learned that on Sunday nights we normally watch a movie and therefore dim the light slightly, or that when I am in the living room in the morning its to eat breakfast and not to watch TV.
+
+The artificial intelligence rules implemented in my automation engine definitely saves me from using my remote or phone to adjust my devices.
+
+One problem is however what happens when I deviate from the rules? What if I suddenly don't want the lights to dim on a Sunday? The last phase will handle this case.
 
 ## Phase 4: Online Learning
 For the final state I will convert the neural network from using just historical data obtained in phase 1 to use the endless stream of data from my home. This online learning algorithm will enable CLAIRE to continuouslylearn evolving habits and be able to receive performance input using my Google home (e.g. OK Google! Bad automation).
