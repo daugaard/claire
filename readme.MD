@@ -1,3 +1,5 @@
+## THIS PROJECT IS NO LONGER MAINTAINED - LINKS IN THIS README WILL LIKELY NOT WORK
+
 # Continuously Learning Artificial Intelligence Rules Engine (Claire) for Smart Homes
 
 Claire is a smart home rules engine designed to make my home truly intelligent by having my home adapt to my habits. By using deep learning techniques Claire learns my behaviors and will automatically execute automations based on my habits.
